@@ -14,13 +14,14 @@
         }
 
         .todo-item {
-            background-color: yellow;
+            background-color: #fcf44e;
             border: 1px solid black;
             padding: 100px;
             text-align: center;
             width: 100px;
             overflow-wrap: break-word;
             user-select: none;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
         }
 
         .bg {
@@ -67,6 +68,10 @@
             div.className = "todo-item"
             div.id = id.toString()
             div.style = `position: absolute; left: ${savedTodos[id].coords.x}; top: ${savedTodos[id].coords.y}`
+            const pin = document.createElement("img")
+            pin.src = "pin.png"
+            pin.style = "position: absolute; top: -50; left: 100; width: 100px;"
+            div.appendChild(pin)
 
             const editInput = document.createElement("input")
             editInput.type = "text"
