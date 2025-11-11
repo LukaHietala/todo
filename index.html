@@ -20,6 +20,7 @@
             text-align: center;
             width: 100px;
             overflow-wrap: break-word;
+            user-select: none;
         }
 
         .bg {
@@ -31,6 +32,14 @@
             background-repeat: no-repeat;
             background-size: cover;
         }
+        .trash {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 200px;
+            transform: scaleX(-1);
+            user-select: none;
+        }
     </style>
 </head>
 <body class="bg">
@@ -40,11 +49,14 @@
     <div id="todo-list">
 
     </div>
+    <img src="image.png" alt="roskis" class="trash" id="trash" draggable="false">
     <script>
         const input = document.getElementById("todo-input");
         const todoList = document.getElementById("todo-list")
+        const trashCan = document.getElementById("trash")
 
         let selectedTodo = ""
+        let trashSelected = false
 
         let todos = []
         let savedTodos = JSON.parse(localStorage.getItem("todos")) ?? []
@@ -78,6 +90,13 @@
                 localStorage.setItem("todos", JSON.stringify(savedTodos))
             }})
 
+            div.addEventListener("mouseover", (event) => {
+                if (trashSelected) {
+                    savedTodos.splice(parseInt(div.id));
+                    document.getElementById(div.id)?.remove()
+                }
+            })
+
             todoList.appendChild(div);
         }
 
@@ -88,26 +107,49 @@
         function addNewTodo() {
             const value = input.value
             const id = savedTodos.length.toString()
+            let coords = {
+                x: Math.floor(Math.random() * window.innerWidth) / 2,
+                y: Math.floor(Math.random() * window.innerHeight) / 2
+            }
 
             savedTodos.push({
                 text: value,
                 coords: {
-                    x: 0,
-                    y: 0
+                    x:  coords.x,
+                    y:  coords.y
                 }
             })
 
             localStorage.setItem("todos", JSON.stringify([...savedTodos, {text: value, coords: {
-                x: 0,
-                y: 0
+                x: coords.x,
+                y: coords.y
             }}]))
             input.value = ""
 
             addTodo(id)
         }
+        trashCan.addEventListener("mouseup", (event) => {
+            if (selectedTodo !== "") {
+                savedTodos.splice(parseInt(selectedTodo), 1);
+                localStorage.setItem("todos", JSON.stringify(savedTodos))
+                document.getElementById(selectedTodo).remove()
+            } else {
+                return
+            }
+        })
+
+        trashCan.addEventListener("mousedown", (event) => {
+            trashSelected = true
+        })
+        
         
         document.onmousemove = moveTodo
-        document.onmouseup = function() {selectedTodo = ""}
+        document.onmouseup = function() {
+            selectedTodo = ""
+            trashSelected = false
+            trashCan.style = `position: absolute; bottom: 0; right: 0`
+            localStorage.setItem("todos", JSON.stringify(savedTodos))
+        }
 
         function moveTodo(event) {
             if (selectedTodo !== "") {
@@ -118,10 +160,11 @@
 
                 localStorage.setItem("todos", JSON.stringify(savedTodos))
             }
+            if (trashSelected) {
+                trashCan.style = `position: absolute; left: ${event.clientX -100}; top: ${event.clientY -100}`
+            }
         }
-        
-        
-        
+
     </script>
 </body>
 </html>
