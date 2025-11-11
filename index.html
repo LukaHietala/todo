@@ -9,7 +9,8 @@
             font-family: "Comic Neue", cursive;
         }
         body, html {
-            height: 100%;
+            height: 100vh;
+            overflow:hidden; 
         }
 
         .todo-item {
@@ -34,114 +35,75 @@
 </head>
 <body class="bg">
     <input type="text" name="todo-input" id="todo-input" required>
-    <button onclick="addTodo()">Lisää</button> 
+    <button onclick="addNewTodo()">Lisää</button> 
     <h1>Todos</h1>
     <div id="todo-list">
 
     </div>
     <script>
         const input = document.getElementById("todo-input");
-        const list = document.getElementById("todo-list")
+        const todoList = document.getElementById("todo-list")
 
         let selectedTodo = ""
-        let editing = ""
 
         let todos = []
         let savedTodos = JSON.parse(localStorage.getItem("todos")) ?? []
 
-        for (let i = 0; i < savedTodos.length; i++) {
+        function addTodo(id) {
             const div = document.createElement("div");
+            div.innerText = savedTodos[id].text;
+            div.className = "todo-item"
+            div.id = id.toString()
+            div.style = `position: absolute; left: ${savedTodos[id].coords.x}; top: ${savedTodos[id].coords.y}`
+
             const editInput = document.createElement("input")
             editInput.type = "text"
-            editInput.id = `edit-${i.toString()}`
-            div.innerText = savedTodos[i].text;
-            div.className = "todo-item"
-            div.id = i.toString()
-            div.style = `position: absolute; left: ${savedTodos[i].coords.x}; top: ${savedTodos[i].coords.y}`
+
             div.addEventListener("mousedown", (event) => {
                 selectedTodo = div.id.toString()
-                console.log(selectedTodo)
             });
-
+            
             div.addEventListener("dblclick", (event) => {
                 editInput.value = div.innerText
                 div.innerText = ""
                 div.appendChild(editInput)
-                editing = div.id.toString()
             })
-
             div.addEventListener("keypress", (event) => {
                 if (event.key === "Enter") {
                 event.preventDefault();
                 div.innerHTML = null
                 div.innerText = editInput.value
-                todos[i].text = editInput.value
-                savedTodos[i].text = editInput.value
+                savedTodos[id].text = editInput.value
 
-                localStorage.setItem("todos", JSON.stringify(todos))
-                
-            }
-            })
+                localStorage.setItem("todos", JSON.stringify(savedTodos))
+            }})
 
-            
-            list.appendChild(div);
-            todos.push(savedTodos[i])
+            todoList.appendChild(div);
+        }
+
+        for (let i = 0; i < savedTodos.length; i++) {
+            addTodo(i)
         };
         
-        function addTodo() {
+        function addNewTodo() {
             const value = input.value
-            const div = document.createElement("div");
-            const editInput = document.createElement("input")
-            editInput.type = "text"
-            div.innerText = value;
-            div.className = "todo-item"
-            div.style = `position: absolute; left: 0; top: 0;`
-            
-            div.id = todos.length.toString()
-            editInput.id = `edit-${div.id.toString()}`
-            div.addEventListener("mousedown", (event) => {
-                selectedTodo = div.id.toString()
-            });
-            list.appendChild(div);
-            todos.push({
+            const id = savedTodos.length.toString()
+
+            savedTodos.push({
                 text: value,
                 coords: {
                     x: 0,
                     y: 0
                 }
             })
-            input.value = ""
+
             localStorage.setItem("todos", JSON.stringify([...savedTodos, {text: value, coords: {
                 x: 0,
                 y: 0
             }}]))
-            savedTodos = [...savedTodos, {
-                text: value,
-                coords: {
-                    x: 0,
-                    y: 0
-                }
-            }]
+            input.value = ""
 
-            div.addEventListener("dblclick", (event) => {
-                editInput.value = div.innerText
-                div.innerText = ""
-                div.appendChild(editInput)
-                editing = div.id.toString()
-            })
-
-            div.addEventListener("keypress", (event) => {
-                if (event.key === "Enter") {
-                event.preventDefault();
-                div.innerHTML = null
-                div.innerText = editInput.value
-                todos[div.id].text = editInput.value
-                savedTodos[div.id].text = editInput.value
-
-                localStorage.setItem("todos", JSON.stringify(todos))
-                
-            }
-            })
+            addTodo(id)
         }
         
         document.onmousemove = moveTodo
@@ -151,10 +113,10 @@
             if (selectedTodo !== "") {
                 const todo = document.getElementById(selectedTodo)
                 todo.style = `position: absolute; left: ${event.clientX -100}; top: ${event.clientY -100}`
-                todos[todo.id].coords.x = event.clientX - 100
-                todos[todo.id].coords.y = event.clientY - 100
+                savedTodos[todo.id].coords.x = event.clientX - 100
+                savedTodos[todo.id].coords.y = event.clientY - 100
 
-                localStorage.setItem("todos", JSON.stringify(todos))
+                localStorage.setItem("todos", JSON.stringify(savedTodos))
             }
         }
         
